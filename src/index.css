@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@layer base {
+  *, ::before, ::after {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tabular-nums {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+
+  input, button, select, textarea {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* Custom subtle scrollbars for tablet viewing */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5d1;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a39b;
+  }
+}
+
+/* Ensure chart hover tooltips with dark backgrounds always display white text */
+.recharts-default-tooltip {
+  color: #ffffff !important;
+}
+
+.recharts-default-tooltip * {
+  color: #ffffff !important;
+}
+
+@media print {
+  /* Hide screen chrome, navigation, headers, forms and print controls */
+  nav,
+  aside,
+  header,
+  .print\:hidden,
+  button,
+  form {
+    display: none !important;
+  }
+
+  /* Ensure colors and borders are preserved when printing */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset viewport and scroll locks so document prints cleanly */
+  html,
+  body,
+  #root,
+  div[class*="h-screen"],
+  div[class*="overflow-hidden"],
+  main {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #14231f !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: static !important;
+  }
+
+  /* Prevent card splitting across page breaks */
+  .break-inside-avoid,
+  div[class*="rounded-2xl"] {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 12mm 12mm 12mm 12mm;
+  }
+}
+

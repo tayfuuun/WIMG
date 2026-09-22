@@ -1,0 +1,7 @@
+{
+  "name": "Finanz- & Vermögens-Dashboard",
+  "description": "Zentrales, tablet-optimiertes Finanz- & Vermögens-Dashboard mit Fixkosten, Einnahmen, Krediten, Energieverbräuchen, Gehaltsentwicklung und Notfall-Zugängen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
