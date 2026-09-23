@@ -1,5 +1,5 @@
 import React from 'react';
-import { PieChart, Shield, Rocket, ArrowUpRight, ArrowRight, RefreshCw } from 'lucide-react';
+import { PieChart, Shield, TrendingUp, ArrowUpRight, RefreshCw } from 'lucide-react';
 import { PortfolioAsset, TabKey } from '../types';
 import { fmt } from '../utils/formatters';
 
@@ -30,34 +30,6 @@ export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
   const totalGain = totalValue - totalInvested;
   const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 83.68;
   const assetCount = activeAssets.length > 0 ? activeAssets.length : 4;
-
-  // Find Top Asset
-  let topAsset = {
-    name: 'Bitcoin',
-    kategorie: 'Krypto',
-    sharePct: 77,
-  };
-
-  if (activeAssets.length > 0 && totalValue > 0) {
-    const sorted = [...activeAssets].sort(
-      (a, b) => b.anteile * b.kursAktuell - a.anteile * a.kursAktuell
-    );
-    const top = sorted[0];
-    const topVal = top.anteile * top.kursAktuell;
-    const catLabel =
-      top.kategorie === 'krypto'
-        ? 'Krypto'
-        : top.kategorie === 'guthaben'
-        ? 'Guthaben'
-        : top.kategorie === 'etf'
-        ? 'ETF'
-        : 'Aktien';
-    topAsset = {
-      name: top.name,
-      kategorie: catLabel,
-      sharePct: Math.round((topVal / totalValue) * 100),
-    };
-  }
 
   // Allocation breakdown
   let kryptoPct = 77;
@@ -123,8 +95,8 @@ export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
           </div>
         </div>
 
-        {/* 3. Haupt-Metriken (obere Reihe) */}
-        <div className="bg-[#18362d]/90 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#2b5548] shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* 3. Haupt-Metrik (obere Karte: Gesamtwert) */}
+        <div className="bg-[#18362d]/90 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#2b5548] shadow-lg flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
@@ -136,27 +108,6 @@ export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
             </div>
             <span className="text-2xl sm:text-3xl font-black text-white tabular-nums tracking-tight block mt-1">
               {fmt(totalValue)}
-            </span>
-          </div>
-
-          <div className="sm:text-right shrink-0">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-              GESAMT-GEWINN / VERLUST
-            </span>
-            <span
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold border ${
-                totalGain >= 0
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35'
-                  : 'bg-rose-500/20 text-rose-300 border-rose-500/35'
-              }`}
-            >
-              <ArrowUpRight
-                className={`w-4 h-4 ${totalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
-              />
-              <span>
-                {totalGain >= 0 ? `+${fmt(totalGain)}` : fmt(totalGain)} ({totalGainPct >= 0 ? '+' : ''}
-                {totalGainPct.toFixed(2)}%)
-              </span>
             </span>
           </div>
         </div>
@@ -177,28 +128,41 @@ export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
               <span className="text-xl sm:text-2xl font-black text-white tabular-nums block">
                 {fmt(totalInvested)}
               </span>
-              <span className="text-xs text-emerald-300 font-medium block mt-1">
-                Reiner Wertzuwachs: {totalGain >= 0 ? `+${fmt(totalGain)}` : fmt(totalGain)}
+              <span className="text-xs text-slate-300 font-medium block mt-1">
+                Kaufwert aller Positionen
               </span>
             </div>
           </div>
 
-          {/* Karte 2 (Top Performer) */}
+          {/* Karte 2 (Gesamt-Gewinn / Verlust) */}
           <div className="bg-[#18362d]/90 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#2b5548] shadow-lg space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Rocket className="w-4 h-4 text-amber-400" />
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                  TOP ASSET
+                <TrendingUp className={`w-4 h-4 ${totalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} />
+                <span className={`text-xs font-bold uppercase tracking-wider ${totalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  GESAMT-GEWINN / VERLUST
                 </span>
               </div>
+              <span
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold border ${
+                  totalGain >= 0
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/35'
+                    : 'bg-rose-500/20 text-rose-300 border-rose-500/35'
+                }`}
+              >
+                <ArrowUpRight className={`w-3.5 h-3.5 ${totalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} />
+                <span>
+                  {totalGainPct >= 0 ? '+' : ''}
+                  {totalGainPct.toFixed(2)}%
+                </span>
+              </span>
             </div>
             <div>
-              <span className="text-xl sm:text-2xl font-black text-white tabular-nums block">
-                {topAsset.name} ({topAsset.kategorie})
+              <span className={`text-xl sm:text-2xl font-black tabular-nums block ${totalGain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {totalGain >= 0 ? `+${fmt(totalGain)}` : fmt(totalGain)}
               </span>
               <span className="text-xs text-slate-300 font-medium block mt-1">
-                Größter Anteil: {topAsset.sharePct}% am Gesamtvermögen
+                Reiner Wertzuwachs seit Kauf
               </span>
             </div>
           </div>
