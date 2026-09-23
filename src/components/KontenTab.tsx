@@ -25,6 +25,9 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
   const [newKontoName, setNewKontoName] = useState('');
   const [newKontoLink, setNewKontoLink] = useState('');
   const [newKontoNotiz, setNewKontoNotiz] = useState('');
+  const [newKontoUsername, setNewKontoUsername] = useState('');
+  const [newKontoHas2FA, setNewKontoHas2FA] = useState(false);
+  const [newKontoHasSecurityCodes, setNewKontoHasSecurityCodes] = useState(false);
 
   const handlePrint = () => {
     try {
@@ -74,6 +77,12 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
     );
   };
 
+  const handleToggleBool = (id: string, field: 'has2FA' | 'hasSecurityCodes') => {
+    onUpdateKonten(
+      konten.map((k) => (k.id === id ? { ...k, [field]: !k[field] } : k))
+    );
+  };
+
   const handleDelete = (id: string) => {
     if (confirm('Dieses Institut wirklich aus der Notfall-Liste entfernen?')) {
       onUpdateKonten(konten.filter((k) => k.id !== id));
@@ -87,12 +96,18 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
       name: newKontoName.trim(),
       link: newKontoLink.trim(),
       notiz: newKontoNotiz.trim(),
+      username: newKontoUsername.trim(),
+      has2FA: newKontoHas2FA,
+      hasSecurityCodes: newKontoHasSecurityCodes,
       kategorie: newKontoKategorie,
     };
     onUpdateKonten([...konten, newKonto]);
     setNewKontoName('');
     setNewKontoLink('');
     setNewKontoNotiz('');
+    setNewKontoUsername('');
+    setNewKontoHas2FA(false);
+    setNewKontoHasSecurityCodes(false);
     setAddingCategory(null);
   };
 
@@ -208,6 +223,23 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
 
         {/* Content-Bereich (schlank) */}
         <div className="space-y-2.5 mb-3">
+          {/* Benutzername / Login-ID */}
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+              BENUTZERNAME / LOGIN-ID
+            </label>
+            <input
+              type="text"
+              value={k.username || ''}
+              onChange={(e) => handleUpdate(k.id, 'username', e.target.value)}
+              placeholder="z.B. Max.Mustermann / Kundennr..."
+              className="print:hidden w-full bg-slate-50/80 border border-slate-200/80 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white transition-all"
+            />
+            <div className="hidden print:block text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg p-2">
+              {k.username || '— Kein Benutzername hinterlegt —'}
+            </div>
+          </div>
+
           {/* Notiz / Zweck */}
           <div>
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
@@ -239,6 +271,66 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
             />
             <div className="hidden print:block text-xs font-mono text-slate-700 bg-slate-50 border border-slate-200 rounded-lg p-2 break-all">
               {k.link || '— Kein Direktlink hinterlegt —'}
+            </div>
+          </div>
+
+          {/* Sicherheit & 2FA (Checkboxes) */}
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+              SICHERHEIT &amp; 2FA ZUGANG
+            </label>
+            <div className="grid grid-cols-2 gap-1.5 print:hidden">
+              <button
+                type="button"
+                onClick={() => handleToggleBool(k.id, 'has2FA')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  k.has2FA
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs'
+                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-all ${
+                    k.has2FA
+                      ? 'bg-emerald-600 border-emerald-600 text-white'
+                      : 'bg-white border-slate-300'
+                  }`}
+                >
+                  {k.has2FA && <Check className="w-3 h-3 stroke-[3]" />}
+                </div>
+                <span className="truncate">2FA aktiviert</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleToggleBool(k.id, 'hasSecurityCodes')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  k.hasSecurityCodes
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs'
+                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-all ${
+                    k.hasSecurityCodes
+                      ? 'bg-emerald-600 border-emerald-600 text-white'
+                      : 'bg-white border-slate-300'
+                  }`}
+                >
+                  {k.hasSecurityCodes && <Check className="w-3 h-3 stroke-[3]" />}
+                </div>
+                <span className="truncate">Backup-Codes</span>
+              </button>
+            </div>
+
+            {/* Print View */}
+            <div className="hidden print:flex items-center gap-3 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-lg p-2">
+              <span className="font-semibold">
+                2FA: {k.has2FA ? '✓ Aktiviert' : '✗ Deaktiviert'}
+              </span>
+              <span className="font-semibold">
+                Backup-Codes: {k.hasSecurityCodes ? '✓ Vorhanden' : '✗ Nicht vorhanden'}
+              </span>
             </div>
           </div>
         </div>
@@ -388,6 +480,19 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
 
         <div>
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
+            BENUTZERNAME / LOGIN-ID
+          </label>
+          <input
+            type="text"
+            value={newKontoUsername}
+            onChange={(e) => setNewKontoUsername(e.target.value)}
+            placeholder="z.B. Max.Mustermann / Kundennr..."
+            className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 font-bold focus:outline-none focus:border-emerald-600"
+          />
+        </div>
+
+        <div>
+          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
             NOTIZ / ZWECK
           </label>
           <input
@@ -411,6 +516,55 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
             className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-600 focus:outline-none focus:border-emerald-600 font-mono"
           />
         </div>
+
+        <div>
+          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+            SICHERHEIT &amp; ZUGANG
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setNewKontoHas2FA(!newKontoHas2FA)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                newKontoHas2FA
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div
+                className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-all ${
+                  newKontoHas2FA
+                    ? 'bg-white text-emerald-700 border-white'
+                    : 'bg-slate-100 border-slate-300'
+                }`}
+              >
+                {newKontoHas2FA && <Check className="w-3 h-3 stroke-[3]" />}
+              </div>
+              <span className="truncate">2FA aktiviert</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setNewKontoHasSecurityCodes(!newKontoHasSecurityCodes)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                newKontoHasSecurityCodes
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div
+                className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-all ${
+                  newKontoHasSecurityCodes
+                    ? 'bg-white text-emerald-700 border-white'
+                    : 'bg-slate-100 border-slate-300'
+                }`}
+              >
+                {newKontoHasSecurityCodes && <Check className="w-3 h-3 stroke-[3]" />}
+              </div>
+              <span className="truncate">Backup-Codes</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center justify-end gap-2 pt-1">
@@ -421,6 +575,9 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
             setNewKontoName('');
             setNewKontoLink('');
             setNewKontoNotiz('');
+            setNewKontoUsername('');
+            setNewKontoHas2FA(false);
+            setNewKontoHasSecurityCodes(false);
           }}
           className="px-3 py-1.5 rounded-xl bg-slate-200/70 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
         >

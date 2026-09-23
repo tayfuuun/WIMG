@@ -385,11 +385,11 @@ export const initialData: DashboardData = {
     { id: 'l2025', jahr: 2025, brutto_jahr: 65000.00, netto_monat: 3200.00, ereignis: '-' },
   ],
   konten: [
-    { id: 'acc1', name: 'Broker Depot', link: 'https://app.broker.example', notiz: 'Depot (Aktien/ETF)', kategorie: 'depot' },
-    { id: 'acc2', name: 'Krypto Exchange', link: 'https://exchange.example', notiz: 'Krypto-Assets', kategorie: 'krypto' },
-    { id: 'acc3', name: 'Hausbank Giro', link: 'https://www.hausbank.example', notiz: 'Giro & Tagesgeld', kategorie: 'bank' },
-    { id: 'acc4', name: 'Direktbank', link: 'https://www.direktbank.example', notiz: 'Girokonto / Kredite', kategorie: 'bank' },
-    { id: 'acc5', name: 'Privatbank', link: 'https://www.privatbank.example', notiz: 'Immo-Finanzierung', kategorie: 'kredit' },
+    { id: 'acc1', name: 'Broker Depot', link: 'https://app.broker.example', notiz: 'Depot (Aktien/ETF)', kategorie: 'depot', username: 'max.broker24', has2FA: true, hasSecurityCodes: true },
+    { id: 'acc2', name: 'Krypto Exchange', link: 'https://exchange.example', notiz: 'Krypto-Assets', kategorie: 'krypto', username: 'm.mustermann', has2FA: true, hasSecurityCodes: true },
+    { id: 'acc3', name: 'Hausbank Giro', link: 'https://www.hausbank.example', notiz: 'Giro & Tagesgeld', kategorie: 'bank', username: '1234567890', has2FA: true, hasSecurityCodes: false },
+    { id: 'acc4', name: 'Direktbank', link: 'https://www.direktbank.example', notiz: 'Girokonto / Kredite', kategorie: 'bank', username: 'max_direkt', has2FA: true, hasSecurityCodes: true },
+    { id: 'acc5', name: 'Privatbank', link: 'https://www.privatbank.example', notiz: 'Immo-Finanzierung', kategorie: 'kredit', username: 'K-9876543', has2FA: false, hasSecurityCodes: false },
   ],
   portfolio: [
     {

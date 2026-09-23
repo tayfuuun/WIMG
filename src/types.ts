@@ -112,6 +112,9 @@ export interface KontoRecord {
   link: string;
   notiz: string;
   kategorie?: 'bank' | 'kredit' | 'depot' | 'krypto';
+  username?: string;
+  has2FA?: boolean;
+  hasSecurityCodes?: boolean;
 }
 
 export type AssetKategorie = 'aktie' | 'etf' | 'krypto' | 'guthaben';
