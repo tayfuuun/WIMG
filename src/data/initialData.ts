@@ -1,4 +1,57 @@
-import { DashboardData } from '../types';
+import { DashboardData, NotfallKonto } from '../types';
+
+export const initialNotfallKonten: NotfallKonto[] = [
+  {
+    id: 'nf-1',
+    institut: 'Sparkasse Fulda',
+    kategorie: 'giro_tagesgeld',
+    vollmachtStatus: 'moeglich_aber_offen',
+    anleitungEhepartner: 'Die Sparkasse sperrt das Konto des Verstorbenen sofort. Wenn die transmortale Bankvollmacht vorliegt, hast du eigene Zugangsdaten und eine eigene pushTAN-App. Falls nicht, bleibt das Konto gesperrt, bis du einen Erbschein oder ein vom Gericht eröffnetes Testament vorlegst.'
+  },
+  {
+    id: 'nf-2',
+    institut: 'C24 Bank',
+    kategorie: 'giro_tagesgeld',
+    vollmachtStatus: 'moeglich_aber_offen',
+    anleitungEhepartner: 'Vollmacht läuft digital über die Funktion „Konto teilen“ in der App. Du greifst über dein eigenes Smartphone und deinen eigenen Account zu. Das defekte Handy des Verstorbenen spielt keine Rolle.'
+  },
+  {
+    id: 'nf-3',
+    institut: 'Scalable Capital',
+    kategorie: 'depot_krypto',
+    vollmachtStatus: 'moeglich_aber_offen',
+    anleitungEhepartner: 'Nach Vorlage der „Konto- und Depotvollmacht für den Todesfall“ und deiner Legitimation erhältst du offiziellen Zugriff auf das Depot.'
+  },
+  {
+    id: 'nf-4',
+    institut: 'Revolut',
+    kategorie: 'giro_tagesgeld',
+    vollmachtStatus: 'nicht_moeglich',
+    notfallKontakt: 'deceased@revolut.com',
+    anleitungEhepartner: 'Revolut bietet keine Bankvollmachten an. Du hast keinen Zugriff auf die App! Sende Sterbeurkunde und Erbschein (oder Testament nebst Eröffnungsprotokoll) per E-Mail an Revolut. Sie schließen das Konto, liquidieren Aktien/Krypto zum Marktwert und überweisen das Geld auf ein Nachlasskonto.'
+  },
+  {
+    id: 'nf-5',
+    institut: 'Kraken',
+    kategorie: 'depot_krypto',
+    vollmachtStatus: 'nicht_moeglich',
+    anleitungEhepartner: 'Keine Vollmachten möglich. Eröffne über den Support einen „Deceased Client Account Claim“. Nach Einreichung von Sterbeurkunde, Ausweis und Erbschein hilft das Compliance-Team bei der Liquidierung oder Übertragung der Krypto-Werte.'
+  },
+  {
+    id: 'nf-6',
+    institut: 'ING',
+    kategorie: 'giro_tagesgeld',
+    vollmachtStatus: 'moeglich_aber_offen',
+    anleitungEhepartner: 'Zugriff erfolgt über eine im Vorfeld eingerichtete Post- und Bankvollmacht für den Todesfall. Ohne diese Vollmacht wird ein Erbschein benötigt.'
+  },
+  {
+    id: 'nf-7',
+    institut: 'Targobank',
+    kategorie: 'kredit',
+    vollmachtStatus: 'moeglich_aber_offen',
+    anleitungEhepartner: 'Kreditkonten müssen abgewickelt oder umgeschrieben werden. Bankvollmacht oder Erbschein vorlegen und Kontakt mit der Kreditabteilung aufnehmen.'
+  }
+];
 
 export const initialData: DashboardData = {
   fix: {
@@ -391,6 +444,7 @@ export const initialData: DashboardData = {
     { id: 'acc4', name: 'Direktbank', link: 'https://www.direktbank.example', notiz: 'Girokonto / Kredite', kategorie: 'bank', username: 'max_direkt', has2FA: true, hasSecurityCodes: true },
     { id: 'acc5', name: 'Privatbank', link: 'https://www.privatbank.example', notiz: 'Immo-Finanzierung', kategorie: 'kredit', username: 'K-9876543', has2FA: false, hasSecurityCodes: false },
   ],
+  notfallKonten: initialNotfallKonten,
   portfolio: [
     {
       id: 'ast-1',

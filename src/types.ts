@@ -117,6 +117,17 @@ export interface KontoRecord {
   hasSecurityCodes?: boolean;
 }
 
+export type VollmachtStatus = 'moeglich_und_erteilt' | 'moeglich_aber_offen' | 'nicht_moeglich';
+
+export interface NotfallKonto {
+  id: string;
+  institut: string; // z. B. "Sparkasse", "Kraken"
+  kategorie: 'giro_tagesgeld' | 'depot_krypto' | 'kredit';
+  vollmachtStatus: VollmachtStatus;
+  anleitungEhepartner: string; // Konkrete Handlungsanweisung im Todesfall
+  notfallKontakt?: string; // E-Mail oder Link für den Support
+}
+
 export type AssetKategorie = 'aktie' | 'etf' | 'krypto' | 'guthaben';
 
 export interface PortfolioAsset {
@@ -149,6 +160,7 @@ export interface DashboardData {
   energie: EnergieData;
   lohn: LohnRecord[];
   konten: KontoRecord[];
+  notfallKonten?: NotfallKonto[];
   portfolio?: PortfolioAsset[];
   visibleTabs?: Record<TabKey, boolean>;
 }

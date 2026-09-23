@@ -11,15 +11,34 @@ import {
   Check,
   X,
 } from 'lucide-react';
-import { KontoRecord } from '../types';
+import { KontoRecord, NotfallKonto } from '../types';
 import { generateId } from '../utils/formatters';
+import { NotfallCockpit } from './NotfallCockpit';
+import { initialNotfallKonten } from '../data/initialData';
 
 interface KontenTabProps {
   konten: KontoRecord[];
   onUpdateKonten: (konten: KontoRecord[]) => void;
+  notfallKonten?: NotfallKonto[];
+  onUpdateNotfallKonten?: (notfallKonten: NotfallKonto[]) => void;
 }
 
-export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) => {
+export const KontenTab: React.FC<KontenTabProps> = ({
+  konten,
+  onUpdateKonten,
+  notfallKonten,
+  onUpdateNotfallKonten,
+}) => {
+  const [localNotfall, setLocalNotfall] = useState<NotfallKonto[]>(initialNotfallKonten);
+
+  const activeNotfall = notfallKonten || localNotfall;
+  const handleUpdateNotfall = (updated: NotfallKonto[]) => {
+    if (onUpdateNotfallKonten) {
+      onUpdateNotfallKonten(updated);
+    } else {
+      setLocalNotfall(updated);
+    }
+  };
   const [addingCategory, setAddingCategory] = useState<'bank' | 'depot' | null>(null);
   const [newKontoKategorie, setNewKontoKategorie] = useState<'bank' | 'kredit' | 'depot' | 'krypto'>('bank');
   const [newKontoName, setNewKontoName] = useState('');
@@ -612,37 +631,11 @@ export const KontenTab: React.FC<KontenTabProps> = ({ konten, onUpdateKonten }) 
         </div>
       </div>
 
-      {/* 1. Notfall-Cockpit (Dunkles Tannengrün) */}
-      <div className="bg-[#12231e] border border-emerald-950/60 rounded-2xl p-5 sm:p-6 shadow-xl text-white relative overflow-hidden">
-        <div className="absolute -right-12 -top-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 space-y-4">
-          {/* Header-Zeile */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 shrink-0" />
-                <span>Notfall- &amp; Nachlass-Tresor</span>
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300/80 mt-0.5 leading-relaxed">
-                Zentrale Sicherheits-Übersicht für Angehörige über alle aktiven Bankkonten, Depots und Zugänge.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="print:hidden bg-emerald-800/80 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-full flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer shrink-0 self-start sm:self-center"
-              title="Notfall-Dossier drucken"
-            >
-              <Printer className="w-4 h-4 text-emerald-300" />
-              <span>Notfall-Dossier drucken</span>
-            </button>
-          </div>
-
-          {/* Status-Leiste / Sicherheits-Tags entfernt */}
-        </div>
-      </div>
+      {/* 1. Notfall- & Nachlass-Cockpit */}
+      <NotfallCockpit
+        notfallKonten={activeNotfall}
+        onUpdateNotfallKonten={handleUpdateNotfall}
+      />
 
       {/* 2. & 3. Sektions-Header & Card-Grids */}
       <div className="space-y-6">

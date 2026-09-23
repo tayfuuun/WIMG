@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { initialData } from './data/initialData';
-import { DashboardData, TabKey, FixCategory, IncomeGroup, Kredit, EnergieData, LohnRecord, KontoRecord } from './types';
+import { initialData, initialNotfallKonten } from './data/initialData';
+import { DashboardData, TabKey, FixCategory, IncomeGroup, Kredit, EnergieData, LohnRecord, KontoRecord, NotfallKonto } from './types';
 import { monthly, parseNum } from './utils/formatters';
 import { calculateCurrentRestDebt, simulateLoanAmortization } from './utils/creditCalculator';
 import { Sidebar } from './components/Sidebar';
@@ -126,6 +126,7 @@ export default function App() {
         return {
           ...initialData,
           ...parsed,
+          notfallKonten: parsed.notfallKonten || initialData.notfallKonten || initialNotfallKonten,
           portfolio,
           fix: {
             categories,
@@ -499,6 +500,10 @@ export default function App() {
             <KontenTab
               konten={data.konten}
               onUpdateKonten={(konten) => setData((prev) => ({ ...prev, konten }))}
+              notfallKonten={data.notfallKonten || initialNotfallKonten}
+              onUpdateNotfallKonten={(notfallKonten) =>
+                setData((prev) => ({ ...prev, notfallKonten }))
+              }
             />
           )}
 
