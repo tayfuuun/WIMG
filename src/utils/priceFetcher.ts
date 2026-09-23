@@ -4,43 +4,31 @@ import { PortfolioAsset } from '../types';
  * Known baseline market prices in EUR for accurate fallback
  */
 const KNOWN_BASELINES: Record<string, number> = {
-  // Bitcoin
-  BTC: 74476.88,
-  BITCOIN: 74476.88,
-  'DE000A27Z304': 74476.88,
+  // Alphabet A (US02079K3059)
+  US02079K3059: 307.18,
+  GOOGL: 307.18,
+  ALPHABET: 307.18,
 
-  // Apple Inc (ISIN US0378331005, WKN 865985)
+  // NVIDIA (US67066G1040)
+  US67066G1040: 199.65,
+  NVDA: 199.65,
+  NVIDIA: 199.65,
+
+  // iShares Nasdaq 100 (IE00B53SZB19)
+  IE00B53SZB19: 1544.40,
+  NASDAQ: 1544.40,
+  SXRV: 1544.40,
+
+  // Apple Inc (ISIN US0378331005)
+  US0378331005: 295.40,
   AAPL: 295.40,
   'APC.DE': 295.40,
-  US0378331005: 295.40,
-  '865985': 295.40,
-  APPLE: 295.40,
-  'APPLE INC.': 295.40,
 
-  // iShares Core MSCI World ETF (ISIN IE00B4L5Y983)
-  IE00B4L5Y983: 98.45,
-  EUNL: 98.45,
-
-  // iShares Core S&P 500 ETF (ISIN IE00B5BMR087)
-  IE00B5BMR087: 542.10,
-
-  // Microsoft (ISIN US5949181045)
-  US5949181045: 412.50,
-  MSFT: 412.50,
-
-  // Allianz (ISIN DE0008469008)
-  DE0008469008: 284.60,
-  ALV: 284.60,
-
-  // SAP (ISIN DE0007164600)
-  DE0007164600: 210.30,
-  SAP: 210.30,
-
-  // Ethereum
+  // Bitcoin & Ethereum
+  BTC: 74476.88,
   ETH: 2375.82,
-  ETHEREUM: 2375.82,
 
-  // Tagesgeld / Cash
+  // Cash / Tagesgeld
   'CASH-RESERVE': 1.0,
   GUTHABEN: 1.0,
 };
@@ -67,7 +55,7 @@ function resolveTickerSymbol(asset: PortfolioAsset): {
     normName.includes('BITCOIN') ||
     (kat === 'krypto' && (normName.includes('BTC') || normKennung === 'BTC'))
   ) {
-    return { type: 'crypto', symbol: 'BTCEUR', fallbackPrice: 74476.88 };
+    return { type: 'crypto', symbol: 'BTCEUR', fallbackPrice: asset.kursAktuell || 74476.88 };
   }
 
   if (
@@ -75,17 +63,44 @@ function resolveTickerSymbol(asset: PortfolioAsset): {
     normName.includes('ETHEREUM') ||
     (kat === 'krypto' && (normName.includes('ETH') || normKennung === 'ETH'))
   ) {
-    return { type: 'crypto', symbol: 'ETHEUR', fallbackPrice: 2375.82 };
+    return { type: 'crypto', symbol: 'ETHEUR', fallbackPrice: asset.kursAktuell || 2375.82 };
   }
 
-  // Check Apple
+  // Alphabet A
+  if (
+    normKennung === 'US02079K3059' ||
+    normKennung === 'GOOGL' ||
+    normName.includes('ALPHABET')
+  ) {
+    return { type: 'stock', symbol: 'ABEA.DE', fallbackPrice: asset.kursAktuell || 307.18 };
+  }
+
+  // NVIDIA
+  if (
+    normKennung === 'US67066G1040' ||
+    normKennung === 'NVDA' ||
+    normName.includes('NVIDIA')
+  ) {
+    return { type: 'stock', symbol: 'NVD.DE', fallbackPrice: asset.kursAktuell || 199.65 };
+  }
+
+  // Nasdaq 100
+  if (
+    normKennung === 'IE00B53SZB19' ||
+    normKennung === 'SXRV' ||
+    normName.includes('NASDAQ')
+  ) {
+    return { type: 'stock', symbol: 'SXRV.DE', fallbackPrice: asset.kursAktuell || 1544.40 };
+  }
+
+  // Apple
   if (
     normKennung === 'US0378331005' ||
     normKennung === '865985' ||
     normKennung === 'AAPL' ||
     normName.includes('APPLE')
   ) {
-    return { type: 'stock', symbol: 'APC.DE', fallbackPrice: 295.40 };
+    return { type: 'stock', symbol: 'APC.DE', fallbackPrice: asset.kursAktuell || 295.40 };
   }
 
   // Other Cryptos
@@ -93,17 +108,9 @@ function resolveTickerSymbol(asset: PortfolioAsset): {
     return { type: 'crypto', symbol: `${normKennung}EUR`, fallbackPrice: asset.kursAktuell || 100.0 };
   }
 
-  // Other Stocks
-  if (/^[A-Z0-9]{2,12}$/.test(normKennung)) {
-    // If ISIN or WKN
-    const known = KNOWN_BASELINES[normKennung] || KNOWN_BASELINES[normName];
-    if (known) {
-      return { type: 'stock', symbol: normKennung.length <= 5 ? `${normKennung}.DE` : 'APC.DE', fallbackPrice: known };
-    }
-  }
-
-  const defaultPrice = KNOWN_BASELINES[normKennung] || KNOWN_BASELINES[normName] || asset.kursAktuell || 100.0;
-  return { type: 'stock', symbol: 'UNKNOWN', fallbackPrice: defaultPrice };
+  const defaultPrice = asset.kursAktuell || KNOWN_BASELINES[normKennung] || KNOWN_BASELINES[normName] || 100.0;
+  const symbolToQuery = normKennung || 'UNKNOWN';
+  return { type: 'stock', symbol: symbolToQuery, fallbackPrice: defaultPrice };
 }
 
 /**
@@ -128,13 +135,37 @@ async function fetchCryptoPrice(symbol: string, fallback: number): Promise<numbe
 }
 
 /**
- * Fetch live quote for stock via Yahoo Finance API
+ * Fetch live quote for stock/ETF via Yahoo Finance API with automatic ISIN lookup
  */
-async function fetchStockPrice(symbol: string, fallback: number): Promise<number> {
-  if (symbol === 'UNKNOWN') return fallback;
+async function fetchStockPrice(symbolOrIsin: string, fallback: number): Promise<number> {
+  if (!symbolOrIsin || symbolOrIsin === 'UNKNOWN') return fallback;
+
+  let querySymbol = symbolOrIsin;
+
+  // If input looks like an ISIN (12 alphanumeric characters starting with 2 letters)
+  if (/^[A-Z]{2}[A-Z0-9]{9}\d$/.test(symbolOrIsin)) {
+    try {
+      const searchRes = await fetch(
+        `https://query1.finance.yahoo.com/v1/finance/search?q=${symbolOrIsin}&quotesCount=5`
+      );
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        const quotes = searchData?.quotes || [];
+        if (quotes.length > 0) {
+          // Prefer German exchanges (.DE or .F) if available for EUR price
+          const eurQuote = quotes.find(
+            (q: any) => q.symbol && (q.symbol.endsWith('.DE') || q.symbol.endsWith('.F'))
+          );
+          querySymbol = eurQuote ? eurQuote.symbol : quotes[0].symbol;
+        }
+      }
+    } catch (e) {
+      console.warn(`ISIN search failed for ${symbolOrIsin}, trying direct query`, e);
+    }
+  }
 
   try {
-    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d`);
+    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${querySymbol}?interval=1d`);
     if (res.ok) {
       const data = await res.json();
       const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
@@ -143,7 +174,7 @@ async function fetchStockPrice(symbol: string, fallback: number): Promise<number
       }
     }
   } catch (e) {
-    console.warn(`Could not fetch live stock price for ${symbol}, using fallback`, e);
+    console.warn(`Could not fetch live stock price for ${querySymbol}, using fallback`, e);
   }
 
   return fallback;
@@ -157,6 +188,11 @@ export async function updateAssetPrices(assets: PortfolioAsset[]): Promise<Portf
     assets.map(async (asset) => {
       if (asset.active === false) return asset;
 
+      // If autoUpdate is disabled, keep current manually entered price
+      if (asset.autoUpdate === false) {
+        return asset;
+      }
+
       const { type, symbol, fallbackPrice } = resolveTickerSymbol(asset);
 
       let newPrice = fallbackPrice;
@@ -169,15 +205,11 @@ export async function updateAssetPrices(assets: PortfolioAsset[]): Promise<Portf
         newPrice = 1.0;
       }
 
-      // Small tick variation if fallback was used to show live refresh feedback
-      if (newPrice === fallbackPrice && type !== 'fixed') {
-        const jitter = (Math.random() * 0.002) - 0.001; // +/- 0.1%
-        newPrice = Number((fallbackPrice * (1 + jitter)).toFixed(2));
-      }
+      const finalPrice = newPrice > 0 ? newPrice : asset.kursAktuell;
 
       return {
         ...asset,
-        kursAktuell: newPrice,
+        kursAktuell: finalPrice,
         letztesUpdate: new Date().toISOString(),
       };
     })

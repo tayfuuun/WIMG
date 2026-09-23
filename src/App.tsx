@@ -99,11 +99,26 @@ export default function App() {
         // Ensure portfolio assets use current market baseline if they were using old default prices
         const rawPortfolio = parsed.portfolio || initialData.portfolio;
         const portfolio = rawPortfolio.map((p: any) => {
-          if (p.kennung === 'BTC' && (p.kursAktuell === 60000 || p.kursAktuell === 50000 || !p.kursAktuell)) {
+          const normKennung = (p.kennung || '').trim().toUpperCase();
+          const normName = (p.name || '').trim().toUpperCase();
+
+          if (normKennung === 'BTC' && (p.kursAktuell === 60000 || p.kursAktuell === 50000 || !p.kursAktuell)) {
             return { ...p, kursAktuell: 74476.88 };
           }
-          if ((p.kennung === 'US0378331005' || p.name?.includes('Apple')) && (p.kursAktuell === 200 || !p.kursAktuell)) {
+          if ((normKennung === 'US0378331005' || normName.includes('APPLE')) && (p.kursAktuell === 200 || !p.kursAktuell)) {
             return { ...p, kursAktuell: 295.40 };
+          }
+          // Alphabet A (Screen 1: 307.18 €)
+          if ((normKennung === 'US02079K3059' || normKennung === 'GOOGL' || normName.includes('ALPHABET')) && (p.kursAktuell === 310.39 || !p.kursAktuell)) {
+            return { ...p, kursAktuell: 307.18 };
+          }
+          // NVIDIA (Screen 2: 199.65 €)
+          if ((normKennung === 'US67066G1040' || normKennung === 'NVDA' || normName.includes('NVIDIA')) && (p.kursAktuell === 195.11 || !p.kursAktuell)) {
+            return { ...p, kursAktuell: 199.65 };
+          }
+          // Nasdaq 100 (Screen 3: 1544.40 €)
+          if ((normKennung === 'IE00B53SZB19' || normKennung === 'SXRV' || normName.includes('NASDAQ')) && (p.kursAktuell === 1502.20 || !p.kursAktuell)) {
+            return { ...p, kursAktuell: 1544.40 };
           }
           return p;
         });
