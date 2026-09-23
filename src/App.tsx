@@ -75,6 +75,8 @@ export default function App() {
             tilgung: k.tilgung !== undefined ? k.tilgung : initMatch?.tilgung,
             startMonat: k.startMonat !== undefined ? k.startMonat : initMatch?.startMonat,
             startJahr: k.startJahr !== undefined ? k.startJahr : initMatch?.startJahr,
+            lastUpdateMonat: k.lastUpdateMonat || k.startMonat || (new Date().getMonth() + 1),
+            lastUpdateJahr: k.lastUpdateJahr || k.startJahr || new Date().getFullYear(),
           };
           // Preserve manually entered restbetrag if available; otherwise calculate
           if (enriched.restbetrag === undefined || enriched.restbetrag === null) {

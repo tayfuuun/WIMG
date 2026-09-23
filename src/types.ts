@@ -53,6 +53,8 @@ export interface Kredit {
   startMonat?: number;
   startJahr?: number;
   startDatum?: string;
+  lastUpdateMonat?: number;
+  lastUpdateJahr?: number;
 }
 
 export interface StromVerbrauch {

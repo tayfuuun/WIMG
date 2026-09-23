@@ -346,6 +346,8 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
       laufzeitJahre: laufzeit,
       startMonat: curMonth,
       startJahr: curYear,
+      lastUpdateMonat: curMonth,
+      lastUpdateJahr: curYear,
       restbetrag: netto,
       rate_monat: calculatedRate,
       kategorie: defaultCat,
@@ -360,6 +362,7 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
   const handleSaveModal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingKredit) return;
+    const now = new Date();
     const finalRest =
       editingKredit.restbetrag !== undefined && editingKredit.restbetrag !== null
         ? Math.max(0, Number(editingKredit.restbetrag))
@@ -367,6 +370,8 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
     const savedKredit: Kredit = {
       ...editingKredit,
       restbetrag: finalRest,
+      lastUpdateMonat: now.getMonth() + 1,
+      lastUpdateJahr: now.getFullYear(),
     };
     onUpdateKredite(
       kredite.map((k) => (k.id === savedKredit.id ? savedKredit : k))
@@ -627,7 +632,7 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
 
           <button
             type="button"
-            onClick={() => setEditingKredit(k)}
+            onClick={() => setEditingKredit({ ...k, restbetrag: calculateCurrentRestDebt(k) })}
             className="w-full py-1.5 px-3 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
             title={tk.editCredit}
           >
@@ -1252,14 +1257,14 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                       </p>
                     </div>
 
-                    {/* 10. Restschuld - Manuell eingegeben & jeden Monat automatisch um die Rate verringert */}
+                    {/* 10. Restschuld - Manuelle Eingabe, die monatlich automatisch um die Rate verringert wird */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-xs font-bold text-[#991b1b] uppercase tracking-wider flex items-center gap-1.5">
-                          <span>Restschuld (Startwert)</span>
+                          <span>Restschuld</span>
                         </label>
                         <span className="text-[10px] font-bold text-[#991b1b] bg-[#fee2e2] px-2 py-0.5 rounded-full border border-[#fca5a5]">
-                          Manuell · mtl. auto-abgezogen
+                          Manuelle Eingabe
                         </span>
                       </div>
                       <div className="relative">
@@ -1275,14 +1280,8 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                         </span>
                       </div>
                       <p className="mt-1.5 text-[11px] text-[#64748b]">
-                        Verringert sich jeden vergangenen Monat ab dem Startdatum ({curStartMonat < 10 ? '0' : ''}{curStartMonat}/{curStartJahr}) automatisch um die mtl. Rate ({fmt(curRate)}).
+                        Gepflegter Stand. Zum 1. jedes Monats wird automatisch die monatliche Rate ({fmt(curRate)}) abgezogen.
                       </p>
-                      {elapsedMonths > 0 && (
-                        <div className="mt-2 p-2 bg-[#fff7ed] border border-[#ffedd5] rounded-lg text-[11px] text-[#c2410c] flex items-center justify-between font-medium">
-                          <span>Aktuelle Restschuld heute ({elapsedMonths} {elapsedMonths === 1 ? 'Monat' : 'Monate'} vergangen):</span>
-                          <strong className="text-base font-bold text-[#9a3412] tabular-nums">{fmt(calculatedRestDebt)}</strong>
-                        </div>
-                      )}
                     </div>
 
                     {/* 12. Link */}

@@ -37,24 +37,24 @@ export function calculateCurrentRestDebt(
 
   const rate = Number(kredit.rate_monat) || 0;
 
-  let startYear = kredit.startJahr;
-  let startMonth = kredit.startMonat;
+  let baseYear = kredit.lastUpdateJahr || kredit.startJahr;
+  let baseMonth = kredit.lastUpdateMonat || kredit.startMonat;
 
-  if (!startYear || !startMonth) {
+  if (!baseYear || !baseMonth) {
     if (kredit.startDatum) {
       const parts = kredit.startDatum.split('-');
       if (parts.length >= 2) {
-        startYear = parseInt(parts[0], 10);
-        startMonth = parseInt(parts[1], 10);
+        baseYear = parseInt(parts[0], 10);
+        baseMonth = parseInt(parts[1], 10);
       }
     }
   }
 
-  if (!startYear || !startMonth || rate <= 0) {
+  if (!baseYear || !baseMonth || rate <= 0) {
     return baseRest;
   }
 
-  const elapsed = getElapsedMonths(startYear, startMonth, asOfDate);
+  const elapsed = getElapsedMonths(baseYear, baseMonth, asOfDate);
   if (elapsed <= 0) {
     return baseRest;
   }
