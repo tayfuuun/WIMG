@@ -18,9 +18,16 @@ export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
 }) => {
   const activeAssets = portfolio.filter((a) => a.active !== false && a.selected !== false);
 
+  // Gesamtwert aller ausgewählten Vermögenswerte (inkl. Guthaben)
   const totalValue = activeAssets.reduce((sum, a) => sum + a.anteile * a.kursAktuell, 0);
-  const totalInvested = activeAssets.reduce((sum, a) => sum + a.anteile * a.kaufpreisDurchschnitt, 0);
-  const totalGain = totalValue - totalInvested;
+
+  // Eingesetztes Kapital nur für Investment-Assets (Aktien, ETFs, Krypto) – ohne Guthaben!
+  const investedAssets = activeAssets.filter((a) => a.kategorie !== 'guthaben');
+  const totalInvested = investedAssets.reduce((sum, a) => sum + a.anteile * a.kaufpreisDurchschnitt, 0);
+  const investedValue = investedAssets.reduce((sum, a) => sum + a.anteile * a.kursAktuell, 0);
+
+  // Gesamt-Gewinn/Verlust berechnet sich ausschließlich aus den Investment-Assets
+  const totalGain = investedValue - totalInvested;
   const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0;
   const assetCount = activeAssets.length;
 
@@ -119,7 +126,7 @@ export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
                 {fmt(totalInvested)}
               </span>
               <span className="text-xs text-slate-300 font-medium block mt-1">
-                Kaufwert aller Positionen
+                Kaufwert der Investments (ohne Guthaben)
               </span>
             </div>
           </div>

@@ -20,7 +20,7 @@ interface PortfolioChartsProps {
 export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
   assets = [],
 }) => {
-  const activeAssets = assets.filter((a) => a.active !== false);
+  const activeAssets = assets.filter((a) => a.active !== false && a.selected !== false);
 
   if (activeAssets.length === 0) {
     return null;
