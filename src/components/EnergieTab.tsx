@@ -428,9 +428,16 @@ export const EnergieTab: React.FC<EnergieTabProps> = ({ energie, onUpdateEnergie
             <div className="p-4 sm:p-5 border-b border-[#f5f8f6]">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5f7069] block">
-                    Jahresverbrauch (kWh)
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#5f7069] block">
+                      Jahresverbrauch (kWh)
+                    </span>
+                    {stromChartData.length > 10 && (
+                      <span className="text-[10px] text-[#8ea69d] font-normal">
+                        (← scrollbar →)
+                      </span>
+                    )}
+                  </div>
                   {avgStrom > 0 && (
                     <span className="text-[11px] text-[#78716c] block">
                       Ø exkl. {currentYear}: <strong className="text-[#14231f]">{avgStrom.toLocaleString('de-DE')} kWh</strong>
@@ -454,8 +461,14 @@ export const EnergieTab: React.FC<EnergieTabProps> = ({ energie, onUpdateEnergie
                   </ResponsiveContainer>
                 </div>
 
-                <div className="w-full pl-12">
-                  <div className="w-full h-72">
+                <div className="w-full pl-12 overflow-x-auto overflow-y-hidden pb-1">
+                  <div
+                    className="h-72"
+                    style={{
+                      width: stromChartData.length > 10 ? `${(stromChartData.length / 10) * 100}%` : '100%',
+                      minWidth: '100%',
+                    }}
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={stromChartData} margin={{ top: 22, right: 10, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#edf2f0" />
@@ -896,9 +909,16 @@ export const EnergieTab: React.FC<EnergieTabProps> = ({ energie, onUpdateEnergie
             <div className="p-4 sm:p-5 border-b border-[#f5f8f6]">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#5f7069] block">
-                    Jahresverbrauch (kWh)
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#5f7069] block">
+                      Jahresverbrauch (kWh)
+                    </span>
+                    {gasChartData.length > 10 && (
+                      <span className="text-[10px] text-[#8ea69d] font-normal">
+                        (← scrollbar →)
+                      </span>
+                    )}
+                  </div>
                   {avgGas > 0 && (
                     <span className="text-[11px] text-[#78716c] block">
                       Ø exkl. {currentYear}: <strong className="text-[#14231f]">{avgGas.toLocaleString('de-DE')} kWh</strong>
@@ -923,8 +943,14 @@ export const EnergieTab: React.FC<EnergieTabProps> = ({ energie, onUpdateEnergie
                   </ResponsiveContainer>
                 </div>
 
-                <div className="w-full pl-12">
-                  <div className="w-full h-72">
+                <div className="w-full pl-12 overflow-x-auto overflow-y-hidden pb-1">
+                  <div
+                    className="h-72"
+                    style={{
+                      width: gasChartData.length > 10 ? `${(gasChartData.length / 10) * 100}%` : '100%',
+                      minWidth: '100%',
+                    }}
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={gasChartData} margin={{ top: 22, right: 10, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#edf2f0" />
