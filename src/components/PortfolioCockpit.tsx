@@ -7,34 +7,27 @@ interface PortfolioCockpitProps {
   portfolio?: PortfolioAsset[];
   onNavigate?: (tab: TabKey) => void;
   onRefreshPrices?: () => void;
+  categoryLabel?: string;
 }
 
 export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
   portfolio = [],
   onNavigate,
   onRefreshPrices,
+  categoryLabel,
 }) => {
-  const activeAssets = portfolio.filter((a) => a.active !== false);
+  const activeAssets = portfolio.filter((a) => a.active !== false && a.selected !== false);
 
-  // Calculations with dynamic fallback to user default specifications
-  const totalValue =
-    activeAssets.length > 0
-      ? activeAssets.reduce((sum, a) => sum + a.anteile * a.kursAktuell, 0)
-      : 101941.54;
-
-  const totalInvested =
-    activeAssets.length > 0
-      ? activeAssets.reduce((sum, a) => sum + a.anteile * a.kaufpreisDurchschnitt, 0)
-      : 55500.0;
-
+  const totalValue = activeAssets.reduce((sum, a) => sum + a.anteile * a.kursAktuell, 0);
+  const totalInvested = activeAssets.reduce((sum, a) => sum + a.anteile * a.kaufpreisDurchschnitt, 0);
   const totalGain = totalValue - totalInvested;
-  const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 83.68;
-  const assetCount = activeAssets.length > 0 ? activeAssets.length : 4;
+  const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0;
+  const assetCount = activeAssets.length;
 
   // Allocation breakdown
-  let kryptoPct = 77;
-  let guthabenPct = 20;
-  let aktienPct = 3;
+  let kryptoPct = 0;
+  let guthabenPct = 0;
+  let aktienPct = 0;
 
   if (activeAssets.length > 0 && totalValue > 0) {
     const kryptoVal = activeAssets
@@ -42,9 +35,6 @@ export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
       .reduce((sum, a) => sum + a.anteile * a.kursAktuell, 0);
     const guthabenVal = activeAssets
       .filter((a) => a.kategorie === 'guthaben')
-      .reduce((sum, a) => sum + a.anteile * a.kursAktuell, 0);
-    const aktienEtfVal = activeAssets
-      .filter((a) => a.kategorie === 'aktie' || a.kategorie === 'etf')
       .reduce((sum, a) => sum + a.anteile * a.kursAktuell, 0);
 
     kryptoPct = Math.round((kryptoVal / totalValue) * 100);
@@ -100,7 +90,7 @@ export const PortfolioCockpit: React.FC<PortfolioCockpitProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                GESAMTWERT PORTFOLIO
+                {categoryLabel ? `GESAMTWERT (${categoryLabel.toUpperCase()})` : 'GESAMTWERT PORTFOLIO'}
               </span>
               <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold">
                 {assetCount} Assets

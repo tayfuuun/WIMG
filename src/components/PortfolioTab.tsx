@@ -15,6 +15,9 @@ import {
   Sparkles,
   Building,
   Info,
+  Check,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 import { PortfolioAsset, AssetKategorie } from '../types';
 import { fmt, parseNum } from '../utils/formatters';
@@ -152,18 +155,50 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({
     onUpdateAssets(assets.filter((a) => a.id !== id));
   };
 
+  const handleToggleSelectAsset = (id: string) => {
+    const updated = assets.map((a) => {
+      if (a.id === id) {
+        return { ...a, selected: !(a.selected !== false) };
+      }
+      return a;
+    });
+    onUpdateAssets(updated);
+  };
+
+  const allSelectedInView =
+    categoryAssets.length > 0 && categoryAssets.every((a) => a.selected !== false);
+
+  const handleToggleSelectAll = () => {
+    const updated = assets.map((a) => {
+      if (filterCat === 'all' || a.kategorie === filterCat) {
+        return { ...a, selected: !allSelectedInView };
+      }
+      return a;
+    });
+    onUpdateAssets(updated);
+  };
+
   const filteredAssets = categoryAssets.filter((asset) => {
-    const matchesQuery = asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesQuery =
+      asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (asset.kennung && asset.kennung.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesQuery;
   });
 
+  const categoryLabelMap: Record<string, string> = {
+    aktie: 'Aktien',
+    etf: 'ETFs',
+    krypto: 'Krypto',
+    guthaben: 'Guthaben',
+  };
+
   return (
     <div className="space-y-6">
-      {/* Dark Green Portfolio Cockpit */}
+      {/* Dark Green Portfolio Cockpit - dynamically bound to selected category & assets */}
       <PortfolioCockpit
-        portfolio={assets}
+        portfolio={categoryAssets}
         onRefreshPrices={handleUpdatePrices}
+        categoryLabel={filterCat !== 'all' ? categoryLabelMap[filterCat] : undefined}
       />
 
       {updateMessage && (
@@ -173,82 +208,150 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({
         </div>
       )}
 
-      {/* Interactive Charts Section */}
-      <PortfolioCharts
-        assets={assets}
-      />
+      {/* Interactive Charts Section - dynamically bound to selected category & assets */}
+      <PortfolioCharts assets={categoryAssets} />
 
       {/* Filter & Search Bar */}
       <div className="flex flex-col gap-3 bg-white p-3.5 rounded-2xl border border-[#d8e2de]">
-        {/* Zeile 1: Kategorien in 1 Zeile (ohne "Alle", Toggle-Filterung) */}
-        <div className="grid grid-cols-4 gap-1.5 w-full">
+        {/* Zeile 1: Kategorien Filter (Alle, Aktien, ETFs, Krypto, Guthaben) */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 w-full">
           <button
+            type="button"
+            onClick={() => setFilterCat('all')}
+            className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate flex items-center justify-center gap-1.5 ${
+              filterCat === 'all'
+                ? 'bg-[#0f766e] text-white shadow-xs'
+                : 'bg-[#f0f4f2] text-[#5f7069] hover:text-[#14231f]'
+            }`}
+          >
+            <span>Alle</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                filterCat === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+              }`}
+            >
+              {activeAssets.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setFilterCat((prev) => (prev === 'aktie' ? 'all' : 'aktie'))}
-            className={`px-2 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate ${
+            className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate flex items-center justify-center gap-1.5 ${
               filterCat === 'aktie'
                 ? 'bg-[#0f766e] text-white shadow-xs'
                 : 'bg-[#f0f4f2] text-[#5f7069] hover:text-[#14231f]'
             }`}
             title="Aktien"
           >
-            Aktien
+            <span>Aktien</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                filterCat === 'aktie' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+              }`}
+            >
+              {activeAssets.filter((a) => a.kategorie === 'aktie').length}
+            </span>
           </button>
+
           <button
+            type="button"
             onClick={() => setFilterCat((prev) => (prev === 'etf' ? 'all' : 'etf'))}
-            className={`px-2 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate ${
+            className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate flex items-center justify-center gap-1.5 ${
               filterCat === 'etf'
                 ? 'bg-[#0f766e] text-white shadow-xs'
                 : 'bg-[#f0f4f2] text-[#5f7069] hover:text-[#14231f]'
             }`}
             title="ETFs"
           >
-            ETFs
+            <span>ETFs</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                filterCat === 'etf' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+              }`}
+            >
+              {activeAssets.filter((a) => a.kategorie === 'etf').length}
+            </span>
           </button>
+
           <button
+            type="button"
             onClick={() => setFilterCat((prev) => (prev === 'krypto' ? 'all' : 'krypto'))}
-            className={`px-2 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate ${
+            className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate flex items-center justify-center gap-1.5 ${
               filterCat === 'krypto'
                 ? 'bg-[#0f766e] text-white shadow-xs'
                 : 'bg-[#f0f4f2] text-[#5f7069] hover:text-[#14231f]'
             }`}
             title="Krypto"
           >
-            Krypto
+            <span>Krypto</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                filterCat === 'krypto' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+              }`}
+            >
+              {activeAssets.filter((a) => a.kategorie === 'krypto').length}
+            </span>
           </button>
+
           <button
+            type="button"
             onClick={() => setFilterCat((prev) => (prev === 'guthaben' ? 'all' : 'guthaben'))}
-            className={`px-2 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate ${
+            className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center truncate flex items-center justify-center gap-1.5 ${
               filterCat === 'guthaben'
                 ? 'bg-[#0f766e] text-white shadow-xs'
                 : 'bg-[#f0f4f2] text-[#5f7069] hover:text-[#14231f]'
             }`}
             title="Guthaben"
           >
-            Guthaben
+            <span>Guthaben</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                filterCat === 'guthaben' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+              }`}
+            >
+              {activeAssets.filter((a) => a.kategorie === 'guthaben').length}
+            </span>
           </button>
         </div>
 
-        {/* Zeile 2: Suchfenster */}
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8ea69d]" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Asset suchen..."
-            className="w-full bg-[#f8faf9] border border-[#d8e2de] rounded-xl pl-9 pr-3 py-2 text-xs text-[#14231f] placeholder-[#8ea69d] focus:outline-none focus:border-[#0f766e] focus:bg-white transition-all"
-          />
-        </div>
+        {/* Zeile 2: Suchfenster & Schnellaktionen (Alle auswählen + Neues Asset) */}
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          <div className="relative w-full flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8ea69d]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Asset suchen..."
+              className="w-full bg-[#f8faf9] border border-[#d8e2de] rounded-xl pl-9 pr-3 py-2 text-xs text-[#14231f] placeholder-[#8ea69d] focus:outline-none focus:border-[#0f766e] focus:bg-white transition-all"
+            />
+          </div>
 
-        {/* Zeile 3: Neues Asset Button */}
-        <div>
-          <button
-            onClick={handleOpenAddModal}
-            className="w-full flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-[#0f766e] hover:bg-[#115e59] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Neues Asset</span>
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <button
+              type="button"
+              onClick={handleToggleSelectAll}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#f0f4f2] hover:bg-[#e2e9e5] text-[#0f766e] text-xs font-bold border border-[#d8e2de] transition-all cursor-pointer whitespace-nowrap"
+              title="Alle sichtbaren Assets auswählen oder abwählen"
+            >
+              {allSelectedInView ? (
+                <CheckSquare className="w-4 h-4 text-[#0f766e]" />
+              ) : (
+                <Square className="w-4 h-4 text-slate-400" />
+              )}
+              <span>{allSelectedInView ? 'Alle abwählen' : 'Alle auswählen'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenAddModal}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-[#0f766e] hover:bg-[#115e59] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Neues Asset</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -264,6 +367,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredAssets.map((asset) => {
+            const isSelected = asset.selected !== false;
             const wertAktuell = asset.anteile * asset.kursAktuell;
             const wertInvestiert = asset.anteile * asset.kaufpreisDurchschnitt;
             const gewinnAbs = wertAktuell - wertInvestiert;
@@ -272,12 +376,31 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({
             return (
               <div
                 key={asset.id}
-                className="bg-white rounded-2xl border border-[#d8e2de] shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between"
+                className={`rounded-2xl border transition-all overflow-hidden flex flex-col justify-between ${
+                  isSelected
+                    ? 'bg-white border-[#d8e2de] shadow-xs hover:shadow-md'
+                    : 'bg-slate-50/90 border-slate-200/90 opacity-70 shadow-none'
+                }`}
               >
-                {/* Header */}
+                {/* Header mit Auswahl-Checkbox */}
                 <div className="p-4 border-b border-[#edf2ef] flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm font-bold text-[#14231f] truncate">{asset.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSelectAsset(asset.id)}
+                      className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
+                        isSelected
+                          ? 'bg-[#0f766e] border-[#0f766e] text-white shadow-xs'
+                          : 'bg-white border-slate-300 text-transparent hover:border-[#0f766e]'
+                      }`}
+                      title={isSelected ? 'Asset für Berechnung abwählen' : 'Asset für Berechnung auswählen'}
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    </button>
+
+                    <span className={`text-sm font-bold truncate ${isSelected ? 'text-[#14231f]' : 'text-slate-500'}`}>
+                      {asset.name}
+                    </span>
                     {asset.kennung && (
                       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#f0f4f2] text-[#0f766e] border border-slate-200/80 shrink-0">
                         {asset.kennung}
@@ -286,6 +409,11 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
+                    {!isSelected && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-200 text-slate-600">
+                        Inaktiv
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleOpenEditModal(asset)}

@@ -128,6 +128,7 @@ export interface PortfolioAsset {
   letztesUpdate?: string; // ISO-Timestamp of last update
   autoUpdate: boolean; // Toggle for daily automatic updates
   active?: boolean; // Whether asset is included in calculations
+  selected?: boolean; // Selection toggle for custom calculation inclusion
 }
 
 export type TabKey = 'cockpit' | 'finanzen' | 'kredite' | 'energie' | 'lohn' | 'konten' | 'fix' | 'portfolio';
