@@ -70,8 +70,11 @@ export interface GasVerbrauch {
 export interface EnergieDetail<T> {
   anbieter: string;
   zaehlernummer: string;
+  kundennummer?: string;
+  vertragsbeginn?: string;
+  kuendigungsdatum?: string;
   loginUrl: string;
-  abschlussDatum: string;
+  abschlussDatum?: string;
   vertragslaufzeit: string;
   preisGarantie: string;
   kuendigungsfrist: string;

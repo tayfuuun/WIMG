@@ -531,77 +531,143 @@ export const EnergieTab: React.FC<EnergieTabProps> = ({ energie, onUpdateEnergie
                 )}
               </button>
               {!isStromVertragCollapsed && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs pt-3">
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Zählernummer
-                    </span>
-                    <input
-                      type="text"
-                      value={strom.zaehlernummer}
-                      onChange={(e) => handleUpdateStromField('zaehlernummer', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
-                    />
+                <div className="space-y-3 text-xs pt-3">
+                  {/* Zeile 1: Kundennummer & Zählernummer */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Kundennummer
+                      </span>
+                      <input
+                        type="text"
+                        value={strom.kundennummer || ''}
+                        onChange={(e) => handleUpdateStromField('kundennummer', e.target.value)}
+                        placeholder="z. B. KD-123456"
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Zählernummer
+                      </span>
+                      <input
+                        type="text"
+                        value={strom.zaehlernummer}
+                        onChange={(e) => handleUpdateStromField('zaehlernummer', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Laufzeit
-                    </span>
-                    <input
-                      type="text"
-                      value={strom.vertragslaufzeit}
-                      onChange={(e) => handleUpdateStromField('vertragslaufzeit', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
-                    />
+
+                  {/* Zeile 2: Vertragsbeginn & Vertragslaufzeit */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Vertragsbeginn
+                      </span>
+                      <input
+                        type="date"
+                        value={strom.vertragsbeginn || ''}
+                        onChange={(e) => handleUpdateStromField('vertragsbeginn', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Vertragslaufzeit
+                      </span>
+                      <input
+                        type="date"
+                        value={strom.vertragslaufzeit || ''}
+                        onChange={(e) => handleUpdateStromField('vertragslaufzeit', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Preisgarantie bis
-                    </span>
-                    <input
-                      type="text"
-                      value={strom.preisGarantie}
-                      onChange={(e) => handleUpdateStromField('preisGarantie', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
-                    />
+
+                  {/* Zeile 3: Kündigungsdatum & Preisgarantie */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Kündigungsdatum
+                      </span>
+                      <input
+                        type="date"
+                        value={strom.kuendigungsdatum || ''}
+                        onChange={(e) => handleUpdateStromField('kuendigungsdatum', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Preisgarantie
+                      </span>
+                      <input
+                        type="date"
+                        value={strom.preisGarantie || ''}
+                        onChange={(e) => handleUpdateStromField('preisGarantie', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Arbeitspreis ({currencySymbol}/kWh)
-                    </span>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      value={strom.arbeitspreis}
-                      onChange={(e) => handleUpdateStromField('arbeitspreis', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold tabular-nums text-[#14231f]"
-                    />
+
+                  {/* Zeile 4: Arbeitspreis, Grundpreis & Abschlag */}
+                  <div className="grid grid-cols-3 gap-3 items-end">
+                    <div className="flex flex-col justify-end">
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Arbeitspreis (€/kWh)
+                      </span>
+                      <div className="relative flex items-center mt-1">
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={strom.arbeitspreis}
+                          onChange={(e) => handleUpdateStromField('arbeitspreis', e.target.value)}
+                          className="w-full bg-white border border-[#d8e2de] rounded-lg pl-2 pr-12 py-1 font-semibold tabular-nums text-[#14231f]"
+                        />
+                        <span className="absolute right-2 text-[11px] text-gray-500 font-medium pointer-events-none">
+                          €/kWh
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-end">
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Grundpreis (€/Jahr)
+                      </span>
+                      <div className="relative flex items-center mt-1">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={strom.grundpreis}
+                          onChange={(e) => handleUpdateStromField('grundpreis', e.target.value)}
+                          className="w-full bg-white border border-[#d8e2de] rounded-lg pl-2 pr-12 py-1 font-semibold tabular-nums text-[#14231f]"
+                        />
+                        <span className="absolute right-2 text-[11px] text-gray-500 font-medium pointer-events-none">
+                          €/Jahr
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-end">
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Abschlag (€/Monat)
+                      </span>
+                      <div className="relative flex items-center mt-1">
+                        <input
+                          type="number"
+                          step="1"
+                          value={strom.abschlag}
+                          onChange={(e) => handleUpdateStromField('abschlag', e.target.value)}
+                          className="w-full bg-white border border-[#d8e2de] rounded-lg pl-2 pr-6 py-1 font-bold tabular-nums text-[#b45309]"
+                        />
+                        <span className="absolute right-2 text-xs font-bold text-[#b45309] pointer-events-none">
+                          €
+                        </span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Zeile 5: Anbieter-Portal Link */}
                   <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Grundpreis ({currencySymbol}/Jahr)
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={strom.grundpreis}
-                      onChange={(e) => handleUpdateStromField('grundpreis', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold tabular-nums text-[#14231f]"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Monatlicher Abschlag
-                    </span>
-                    <input
-                      type="number"
-                      step="1"
-                      value={strom.abschlag}
-                      onChange={(e) => handleUpdateStromField('abschlag', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-bold tabular-nums text-[#b45309]"
-                    />
-                  </div>
-                  <div className="col-span-2 sm:col-span-3">
                     <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
                       Anbieter-Portal Link (URL)
                     </span>
@@ -1045,77 +1111,143 @@ export const EnergieTab: React.FC<EnergieTabProps> = ({ energie, onUpdateEnergie
                 )}
               </button>
               {!isGasVertragCollapsed && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs pt-3">
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Zählernummer
-                    </span>
-                    <input
-                      type="text"
-                      value={gas.zaehlernummer}
-                      onChange={(e) => handleUpdateGasField('zaehlernummer', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
-                    />
+                <div className="space-y-3 text-xs pt-3">
+                  {/* Zeile 1: Kundennummer & Zählernummer */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Kundennummer
+                      </span>
+                      <input
+                        type="text"
+                        value={gas.kundennummer || ''}
+                        onChange={(e) => handleUpdateGasField('kundennummer', e.target.value)}
+                        placeholder="z. B. KD-987654"
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Zählernummer
+                      </span>
+                      <input
+                        type="text"
+                        value={gas.zaehlernummer}
+                        onChange={(e) => handleUpdateGasField('zaehlernummer', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Laufzeit
-                    </span>
-                    <input
-                      type="text"
-                      value={gas.vertragslaufzeit}
-                      onChange={(e) => handleUpdateGasField('vertragslaufzeit', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
-                    />
+
+                  {/* Zeile 2: Vertragsbeginn & Vertragslaufzeit */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Vertragsbeginn
+                      </span>
+                      <input
+                        type="date"
+                        value={gas.vertragsbeginn || ''}
+                        onChange={(e) => handleUpdateGasField('vertragsbeginn', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Vertragslaufzeit
+                      </span>
+                      <input
+                        type="date"
+                        value={gas.vertragslaufzeit || ''}
+                        onChange={(e) => handleUpdateGasField('vertragslaufzeit', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Preisgarantie bis
-                    </span>
-                    <input
-                      type="text"
-                      value={gas.preisGarantie}
-                      onChange={(e) => handleUpdateGasField('preisGarantie', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
-                    />
+
+                  {/* Zeile 3: Kündigungsdatum & Preisgarantie */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Kündigungsdatum
+                      </span>
+                      <input
+                        type="date"
+                        value={gas.kuendigungsdatum || ''}
+                        onChange={(e) => handleUpdateGasField('kuendigungsdatum', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Preisgarantie
+                      </span>
+                      <input
+                        type="date"
+                        value={gas.preisGarantie || ''}
+                        onChange={(e) => handleUpdateGasField('preisGarantie', e.target.value)}
+                        className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold text-[#14231f]"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Arbeitspreis ({currencySymbol}/kWh)
-                    </span>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      value={gas.arbeitspreis}
-                      onChange={(e) => handleUpdateGasField('arbeitspreis', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold tabular-nums text-[#14231f]"
-                    />
+
+                  {/* Zeile 4: Arbeitspreis, Grundpreis & Abschlag */}
+                  <div className="grid grid-cols-3 gap-3 items-end">
+                    <div className="flex flex-col justify-end">
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Arbeitspreis (€/kWh)
+                      </span>
+                      <div className="relative flex items-center mt-1">
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={gas.arbeitspreis}
+                          onChange={(e) => handleUpdateGasField('arbeitspreis', e.target.value)}
+                          className="w-full bg-white border border-[#d8e2de] rounded-lg pl-2 pr-12 py-1 font-semibold tabular-nums text-[#14231f]"
+                        />
+                        <span className="absolute right-2 text-[11px] text-gray-500 font-medium pointer-events-none">
+                          €/kWh
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-end">
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Grundpreis (€/Monat)
+                      </span>
+                      <div className="relative flex items-center mt-1">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={gas.grundpreis}
+                          onChange={(e) => handleUpdateGasField('grundpreis', e.target.value)}
+                          className="w-full bg-white border border-[#d8e2de] rounded-lg pl-2 pr-14 py-1 font-semibold tabular-nums text-[#14231f]"
+                        />
+                        <span className="absolute right-2 text-[11px] text-gray-500 font-medium pointer-events-none">
+                          €/Monat
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-end">
+                      <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
+                        Abschlag (€/Monat)
+                      </span>
+                      <div className="relative flex items-center mt-1">
+                        <input
+                          type="number"
+                          step="1"
+                          value={gas.abschlag}
+                          onChange={(e) => handleUpdateGasField('abschlag', e.target.value)}
+                          className="w-full bg-white border border-[#d8e2de] rounded-lg pl-2 pr-6 py-1 font-bold tabular-nums text-[#dc2626]"
+                        />
+                        <span className="absolute right-2 text-xs font-bold text-[#dc2626] pointer-events-none">
+                          €
+                        </span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Zeile 5: Anbieter-Portal Link */}
                   <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Grundpreis ({currencySymbol}/Monat)
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={gas.grundpreis}
-                      onChange={(e) => handleUpdateGasField('grundpreis', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-semibold tabular-nums text-[#14231f]"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
-                      Monatlicher Abschlag
-                    </span>
-                    <input
-                      type="number"
-                      step="1"
-                      value={gas.abschlag}
-                      onChange={(e) => handleUpdateGasField('abschlag', e.target.value)}
-                      className="w-full bg-white border border-[#d8e2de] rounded-lg px-2 py-1 font-bold tabular-nums text-[#dc2626]"
-                    />
-                  </div>
-                  <div className="col-span-2 sm:col-span-3">
                     <span className="text-[#8ea69d] block text-[10px] uppercase font-semibold">
                       Anbieter-Portal Link (URL)
                     </span>
