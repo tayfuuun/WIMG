@@ -26,6 +26,7 @@ import {
   calculateCurrentRestDebt,
   calculateMonthlyRate,
   calculateTotalAmount,
+  calculateRestschuldAtZinsende,
   getElapsedMonths,
   simulateLoanAmortization,
 } from '../utils/creditCalculator';
@@ -492,6 +493,10 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
     };
 
     const restlaufzeitText = formatLaufzeitText(remainingMonths);
+    const restschuldZinsende = calculateRestschuldAtZinsende(k);
+    const zinsbindungFormatted = k.zinsbindungBis
+      ? `${k.zinsbindungBis.split('-')[1]}/${k.zinsbindungBis.split('-')[0]}`
+      : null;
 
     // Color schema based on whether it is Bausparer (asset = teal/emerald green/blue), Immo (green), or Ratenkredit (blue)
     // Color schema based on whether it is Bausparer (asset = teal/emerald green/blue), Immo (green), or Ratenkredit (neutral clean)
@@ -610,6 +615,18 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
               <span>Start: <strong className="text-slate-700 font-semibold">{startFormatted}</strong></span>
               <span>Ende: <strong className="text-slate-700 font-semibold">{endFormatted}</strong></span>
             </div>
+
+            {/* Zinsbindung & Restschuld bei Zinsende für Immobilienkredite */}
+            {(isImmo || zinsbindungFormatted) && (
+              <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs bg-emerald-50/70 px-3 py-1.5 rounded-xl border border-emerald-200/80">
+                <span className="text-emerald-900 font-semibold">
+                  Zinsbindung bis: <strong className="text-emerald-950 font-bold">{zinsbindungFormatted || endFormatted}</strong>
+                </span>
+                <span className="text-rose-800 font-medium">
+                  Restschuld bei Zinsende: <strong className="text-rose-900 font-black tabular-nums">{restschuldZinsende !== null ? fmt(restschuldZinsende) : '—'}</strong>
+                </span>
+              </div>
+            )}
 
             {/* Eigene Zeile für Restlaufzeit */}
             <div className="flex items-center justify-between text-xs bg-slate-100/90 px-3 py-1.5 rounded-xl border border-slate-200/70">
@@ -1186,23 +1203,56 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                       </div>
                     </div>
 
-                    {/* 6. Laufzeit in Jahren (Dropdown 1-20 Jahre mit Monaten) */}
-                    <div>
-                      <label className="text-xs font-bold text-[#475569] uppercase tracking-wider block mb-1">
-                        Laufzeit in Jahren
-                      </label>
-                      <select
-                        value={curLaufzeit}
-                        onChange={(e) => handleLaufzeitChange(parseInt(e.target.value, 10))}
-                        className="w-full bg-[#f8fafc] border border-[#cbd5e1] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#0f172a] focus:outline-none focus:border-[#1e3a8a] focus:bg-white transition-colors cursor-pointer"
-                      >
-                        {LAUFZEIT_OPTIONS.map((opt) => (
-                          <option key={opt.years} value={opt.years}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    {/* 6. Laufzeit in Jahren (oder Voraussichtliche Zuteilung bei Bausparer) */}
+                    {editingKredit.isBausparer ? (
+                      <div>
+                        <label className="text-xs font-bold text-[#0f766e] uppercase tracking-wider block mb-1">
+                          Voraussichtliche Zuteilung (Monat &amp; Jahr)
+                        </label>
+                        <input
+                          type="month"
+                          value={editingKredit.zuteilungDatum || ''}
+                          onChange={(e) =>
+                            setEditingKredit({ ...editingKredit, zuteilungDatum: e.target.value })
+                          }
+                          className="w-full bg-[#f0fdfa] border border-[#99f6e4] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#0f766e] focus:outline-none focus:border-[#0d9488] focus:bg-white transition-colors cursor-pointer"
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="text-xs font-bold text-[#475569] uppercase tracking-wider block mb-1">
+                          Laufzeit in Jahren
+                        </label>
+                        <select
+                          value={curLaufzeit}
+                          onChange={(e) => handleLaufzeitChange(parseInt(e.target.value, 10))}
+                          className="w-full bg-[#f8fafc] border border-[#cbd5e1] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#0f172a] focus:outline-none focus:border-[#1e3a8a] focus:bg-white transition-colors cursor-pointer"
+                        >
+                          {LAUFZEIT_OPTIONS.map((opt) => (
+                            <option key={opt.years} value={opt.years}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Dynamische Zinsbindung für Immobilienkredite (Annuität) */}
+                    {editingKredit.kategorie === 'immobilie' && editingKredit.tilgungsart !== 'endfaellig' && (
+                      <div>
+                        <label className="text-xs font-bold text-[#15803d] uppercase tracking-wider block mb-1">
+                          Ende der Zinsbindung (Monat &amp; Jahr)
+                        </label>
+                        <input
+                          type="month"
+                          value={editingKredit.zinsbindungBis || ''}
+                          onChange={(e) =>
+                            setEditingKredit({ ...editingKredit, zinsbindungBis: e.target.value })
+                          }
+                          className="w-full bg-[#f0fdf4] border border-[#86efac] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#166534] focus:outline-none focus:border-[#22c55e] focus:bg-white transition-colors cursor-pointer"
+                        />
+                      </div>
+                    )}
 
                     {/* 7. Zinssatz */}
                     <div>
@@ -1297,7 +1347,7 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                         </span>
                       </div>
                       <p className="mt-1.5 text-[11px] text-[#64748b]">
-                        Gepflegter Stand. Zum 1. jedes Monats wird automatisch die monatliche Rate ({fmt(curRate)}) abgezogen.
+                        Die Restschuld wird monatlich auf Basis des Zins- und Tilgungsanteils exakt berechnet.
                       </p>
                     </div>
 

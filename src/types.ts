@@ -55,6 +55,9 @@ export interface Kredit {
   startDatum?: string;
   lastUpdateMonat?: number;
   lastUpdateJahr?: number;
+  zinsbindungBis?: string; // Format YYYY-MM
+  restschuldZinsende?: number; // Vorausberechnete Restschuld am Ende der Zinsbindung
+  zuteilungDatum?: string; // Format YYYY-MM
 }
 
 export interface StromVerbrauch {

@@ -65,9 +65,75 @@ export function calculateCurrentRestDebt(
   }
 
   // 3. Standard-Kredit (Ratenkredit & Immobilienkredit):
-  // Die Restschuld verringert sich jeden Monat automatisch um die monatliche Rate
-  const current = baseRest - elapsed * rate;
-  return Math.max(0, Math.round(current * 100) / 100);
+  // Exakte Annuitäten-Iteration für jeden vergangenen Monat:
+  // Monatszins = (Aktuelle Restschuld * (Sollzins / 100)) / 12
+  // Tilgungsanteil = Monatliche Rate - Monatszins
+  // Neue Restschuld = Aktuelle Restschuld - Tilgungsanteil
+  const zinsPAnnum = Number(kredit.zins) || 0;
+  let currentRest = baseRest;
+
+  for (let m = 0; m < elapsed; m++) {
+    if (currentRest <= 0) break;
+    const monatsZins = (currentRest * (zinsPAnnum / 100)) / 12;
+    const tilgungsAnteil = rate - monatsZins;
+    if (tilgungsAnteil <= 0) {
+      // Falls Rate kleiner als Zinsen ist, verringert sich die Restschuld nicht
+      break;
+    }
+    currentRest = Math.max(0, currentRest - tilgungsAnteil);
+  }
+
+  return Math.round(currentRest * 100) / 100;
+}
+
+/**
+ * Calculates precalculated remaining debt at the end of fixed interest rate period (zinsbindungBis).
+ * Employs exact month-by-month annuity iteration from start date to target fixed interest end date.
+ */
+export function calculateRestschuldAtZinsende(kredit: Partial<Kredit>): number | null {
+  if (!kredit.zinsbindungBis) return null;
+  const parts = kredit.zinsbindungBis.split('-');
+  if (parts.length < 2) return null;
+  const targetYear = parseInt(parts[0], 10);
+  const targetMonth = parseInt(parts[1], 10);
+  if (isNaN(targetYear) || isNaN(targetMonth)) return null;
+
+  let baseYear = kredit.startJahr || kredit.lastUpdateJahr;
+  let baseMonth = kredit.startMonat || kredit.lastUpdateMonat;
+  if (!baseYear || !baseMonth) {
+    if (kredit.startDatum) {
+      const dParts = kredit.startDatum.split('-');
+      if (dParts.length >= 2) {
+        baseYear = parseInt(dParts[0], 10);
+        baseMonth = parseInt(dParts[1], 10);
+      }
+    }
+  }
+  if (!baseYear || !baseMonth) return null;
+
+  const totalMonths = (targetYear - baseYear) * 12 + (targetMonth - baseMonth);
+  if (totalMonths <= 0) {
+    return Number(kredit.betrag) || Number(kredit.restbetrag) || 0;
+  }
+
+  const baseRest = Number(kredit.betrag) || Number(kredit.restbetrag) || 0;
+  if (kredit.tilgungsart === 'endfaellig') {
+    return baseRest;
+  }
+
+  const rate = Number(kredit.rate_monat) || 0;
+  const zinsPAnnum = Number(kredit.zins) || 0;
+
+  let currentRest = baseRest;
+  for (let m = 0; m < totalMonths; m++) {
+    if (currentRest <= 0) break;
+    const monatsZins = (currentRest * (zinsPAnnum / 100)) / 12;
+    const tilgungsAnteil = rate - monatsZins;
+    if (tilgungsAnteil <= 0) break;
+    currentRest = Math.max(0, currentRest - tilgungsAnteil);
+  }
+
+  return Math.round(currentRest * 100) / 100;
 }
 
 /**
