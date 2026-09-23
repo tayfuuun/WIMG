@@ -476,6 +476,23 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
     const endFormatted = formatEndDate(startJahr, startMonat, totalMonths);
     const isBallonSchlussrate = !isBausparer && rest > 0 && clampedElapsed >= totalMonths;
 
+    const formatLaufzeitText = (totalM: number) => {
+      if (totalM <= 0) return '0 Monate';
+      if (totalM >= 12) {
+        const years = Math.floor(totalM / 12);
+        const months = Math.round(totalM % 12);
+        const yearStr = years === 1 ? '1 Jahr' : `${years} Jahre`;
+        if (months === 0) return yearStr;
+        const monthStr = months === 1 ? '1 Monat' : `${months} Monate`;
+        return `${yearStr} ${monthStr}`;
+      } else {
+        const m = Math.round(totalM);
+        return `${m} ${m === 1 ? 'Monat' : 'Monate'}`;
+      }
+    };
+
+    const restlaufzeitText = formatLaufzeitText(remainingMonths);
+
     // Color schema based on whether it is Bausparer (asset = teal/emerald green/blue), Immo (green), or Ratenkredit (blue)
     // Color schema based on whether it is Bausparer (asset = teal/emerald green/blue), Immo (green), or Ratenkredit (neutral clean)
     const cardBg = isActive
@@ -534,12 +551,6 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                   </span>
                 )}
               </div>
-
-              <div>
-                <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200/60">
-                  {isBausparer ? 'Bausparsumme' : 'Kreditsumme'}: {fmt(k.betrag)}
-                </span>
-              </div>
             </div>
           </div>
 
@@ -576,7 +587,7 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
             {/* Header: Laufzeit & % Getilgt */}
             <div className="flex items-center justify-between text-[11px] text-slate-600">
               <span className="font-semibold">
-                Laufzeit: {laufzeitJahre} {laufzeitJahre === 1 ? 'Jahr' : 'Jahre'} ({k.zins}% Zinsen)
+                Laufzeit: {formatLaufzeitText(totalMonths)} ({k.zins}% Zinsen)
               </span>
               <span className="font-extrabold text-emerald-600 tabular-nums">
                 {isBausparer
@@ -595,9 +606,15 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
             </div>
 
             {/* Timeline: Start & Ende */}
-            <div className="flex items-center justify-between text-[10px] text-slate-500 tabular-nums">
+            <div className="flex items-center justify-between text-[11px] text-slate-500 tabular-nums">
               <span>Start: <strong className="text-slate-700 font-semibold">{startFormatted}</strong></span>
-              <span>Ende: <strong className="text-slate-700 font-semibold">{endFormatted} ({clampedElapsed}/{totalMonths} Monate)</strong></span>
+              <span>Ende: <strong className="text-slate-700 font-semibold">{endFormatted}</strong></span>
+            </div>
+
+            {/* Eigene Zeile für Restlaufzeit */}
+            <div className="flex items-center justify-between text-xs bg-slate-100/90 px-3 py-1.5 rounded-xl border border-slate-200/70">
+              <span className="text-slate-600 font-medium">Verbleibende Restlaufzeit:</span>
+              <strong className="text-slate-900 font-extrabold tabular-nums">{restlaufzeitText}</strong>
             </div>
 
             {/* Betragstransparenz: Kreditsumme vs Gesamtaufwand */}
