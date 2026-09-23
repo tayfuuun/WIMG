@@ -23,56 +23,19 @@ export function calculateCurrentRestDebt(
   kredit: Partial<Kredit>,
   asOfDate: Date = new Date()
 ): number {
-  const netto = Number(kredit.betrag) || 0;
-  const rate = Number(kredit.rate_monat) || 0;
-  const zins = Number(kredit.zins) || 0;
+  const baseRest =
+    kredit.restbetrag !== undefined && kredit.restbetrag !== null
+      ? Number(kredit.restbetrag)
+      : Number(kredit.betrag) || 0;
 
-  if (netto <= 0) return 0;
+  if (baseRest <= 0) return 0;
 
   // 1. Endfälliges Darlehen: Restschuld bleibt immer gleich dem Ursprungsbetrag
   if (kredit.tilgungsart === 'endfaellig') {
-    return netto;
+    return baseRest;
   }
 
-  // 2. Bausparvertrag (Guthaben): Rate addiert sich zum Guthaben statt eine Schuld zu tilgen
-  if (kredit.isBausparer) {
-    let startYear = kredit.startJahr;
-    let startMonth = kredit.startMonat;
-    if (!startYear || !startMonth) {
-      if (kredit.startDatum) {
-        const parts = kredit.startDatum.split('-');
-        if (parts.length >= 2) {
-          startYear = parseInt(parts[0], 10);
-          startMonth = parseInt(parts[1], 10);
-        }
-      }
-    }
-
-    // Wenn manueller Restbetrag vorhanden und kein Datum da ist:
-    if (!startYear || !startMonth) {
-      return kredit.restbetrag !== undefined ? Number(kredit.restbetrag) : 0;
-    }
-
-    const elapsed = getElapsedMonths(startYear, startMonth, asOfDate);
-    // Bei Bausparern wächst das Guthaben durch Einzahlungen (+ evtl. Zinsen)
-    // Wenn ein fixer restbetrag angegeben ist (z.B. Stand Sep 2026), nutzen wir ihn als Basis oder errechnen:
-    if (kredit.restbetrag !== undefined && kredit.restbetrag !== null) {
-      return Number(kredit.restbetrag);
-    }
-    // Standard-Hochrechnung falls kein Restbetrag hinterlegt ist:
-    let balance = 0;
-    const monthlyZinsRate = (zins / 100) / 12;
-    for (let m = 0; m < elapsed; m++) {
-      balance += rate;
-      balance += balance * monthlyZinsRate;
-    }
-    return Math.round(balance * 100) / 100;
-  }
-
-  // 3. Standard Annuitätendarlehen
-  if (rate <= 0) {
-    return kredit.restbetrag !== undefined ? Number(kredit.restbetrag) : netto;
-  }
+  const rate = Number(kredit.rate_monat) || 0;
 
   let startYear = kredit.startJahr;
   let startMonth = kredit.startMonat;
@@ -87,31 +50,24 @@ export function calculateCurrentRestDebt(
     }
   }
 
-  // If no start date is configured, preserve existing restbetrag or fallback to netto
-  if (!startYear || !startMonth) {
-    return kredit.restbetrag !== undefined ? Number(kredit.restbetrag) : netto;
+  if (!startYear || !startMonth || rate <= 0) {
+    return baseRest;
   }
 
   const elapsed = getElapsedMonths(startYear, startMonth, asOfDate);
   if (elapsed <= 0) {
-    return netto;
+    return baseRest;
   }
 
-  // Monthly amortization schedule calculation
-  let balance = netto;
-  const monthlyZinsRate = (zins / 100) / 12;
-
-  for (let m = 0; m < elapsed; m++) {
-    if (balance <= 0) {
-      balance = 0;
-      break;
-    }
-    const monthlyInterest = balance * monthlyZinsRate;
-    const monthlyPrincipal = Math.max(0, rate - monthlyInterest);
-    balance = Math.max(0, balance - monthlyPrincipal);
+  // 2. Bausparvertrag (Guthaben): Guthaben wächst monatlich um die Einzahlungsrate
+  if (kredit.isBausparer) {
+    return Math.round((baseRest + elapsed * rate) * 100) / 100;
   }
 
-  return Math.round(balance * 100) / 100;
+  // 3. Standard-Kredit (Ratenkredit & Immobilienkredit):
+  // Die Restschuld verringert sich jeden Monat automatisch um die monatliche Rate
+  const current = baseRest - elapsed * rate;
+  return Math.max(0, Math.round(current * 100) / 100);
 }
 
 /**

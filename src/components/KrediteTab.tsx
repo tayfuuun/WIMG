@@ -174,14 +174,14 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
     return cat === categoryFilter;
   });
 
-  // Category-specific breakdowns
+  // Category-specific breakdowns (verwendet calculateCurrentRestDebt für dynamischen monatlichen Abzug)
   const ratenKredite = kredite.filter((k) => {
     const cat = k.kategorie || 'ratenkredit';
     return cat === 'ratenkredit' || cat === 'konsum';
   });
   const activeRaten = ratenKredite.filter((k) => k.active !== false);
   const ratenDebt = activeRaten.filter((k) => !k.isBausparer);
-  const ratenRest = ratenDebt.reduce((s, k) => s + parseNum(k.restbetrag), 0);
+  const ratenRest = ratenDebt.reduce((s, k) => s + calculateCurrentRestDebt(k), 0);
   const ratenOriginal = ratenDebt.reduce((s, k) => s + parseNum(k.gesamtbetrag), 0);
   const ratenPaid = Math.max(0, ratenOriginal - ratenRest);
   const ratenPaidPct = ratenOriginal > 0 ? (ratenPaid / ratenOriginal) * 100 : 0;
@@ -195,8 +195,8 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
   const activeImmo = immoKredite.filter((k) => k.active !== false);
   const immoDebt = activeImmo.filter((k) => !k.isBausparer);
   const immoBauspar = activeImmo.filter((k) => !!k.isBausparer);
-  const immoRest = immoDebt.reduce((s, k) => s + parseNum(k.restbetrag), 0);
-  const immoBausparGuthaben = immoBauspar.reduce((s, k) => s + parseNum(k.restbetrag), 0);
+  const immoRest = immoDebt.reduce((s, k) => s + calculateCurrentRestDebt(k), 0);
+  const immoBausparGuthaben = immoBauspar.reduce((s, k) => s + calculateCurrentRestDebt(k), 0);
   const immoOriginal = immoDebt.reduce((s, k) => s + parseNum(k.gesamtbetrag), 0);
   const immoPaid = Math.max(0, immoOriginal - immoRest);
   const immoPaidPct = immoOriginal > 0 ? (immoPaid / immoOriginal) * 100 : 0;
@@ -211,8 +211,8 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
   const allDebtKredite = allActiveKredite.filter((k) => !k.isBausparer);
   const allBausparKredite = allActiveKredite.filter((k) => !!k.isBausparer);
 
-  const allRestDebt = allDebtKredite.reduce((sum, k) => sum + parseNum(k.restbetrag), 0);
-  const allBausparGuthaben = allBausparKredite.reduce((sum, k) => sum + parseNum(k.restbetrag), 0);
+  const allRestDebt = allDebtKredite.reduce((sum, k) => sum + calculateCurrentRestDebt(k), 0);
+  const allBausparGuthaben = allBausparKredite.reduce((sum, k) => sum + calculateCurrentRestDebt(k), 0);
   const allOriginalDebt = allDebtKredite.reduce((sum, k) => sum + parseNum(k.gesamtbetrag), 0);
   const allPaidDebt = Math.max(0, allOriginalDebt - allRestDebt);
   const allPaidPercent = allOriginalDebt > 0 ? (allPaidDebt / allOriginalDebt) * 100 : 0;
@@ -377,63 +377,38 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
   const handleNettoChange = (val: number) => {
     if (!editingKredit) return;
     const netto = Math.max(0, val);
-    const zins = editingKredit.zins || 0;
-    const laufzeit = editingKredit.laufzeitJahre || 5;
-    const rate = calculateMonthlyRate(netto, zins, laufzeit);
-    const gesamt = calculateTotalAmount(rate, laufzeit);
-    const nextKredit: Kredit = {
+    setEditingKredit({
       ...editingKredit,
       betrag: netto,
-      rate_monat: rate,
-      gesamtbetrag: gesamt,
       restbetrag:
         editingKredit.restbetrag !== undefined && editingKredit.restbetrag !== null
           ? editingKredit.restbetrag
           : netto,
-    };
-    setEditingKredit(nextKredit);
+    });
   };
 
   const handleLaufzeitChange = (years: number) => {
     if (!editingKredit) return;
-    const netto = editingKredit.betrag || 0;
-    const zins = editingKredit.zins || 0;
-    const rate = calculateMonthlyRate(netto, zins, years);
-    const gesamt = calculateTotalAmount(rate, years);
-    const nextKredit: Kredit = {
+    setEditingKredit({
       ...editingKredit,
       laufzeitJahre: years,
-      rate_monat: rate,
-      gesamtbetrag: gesamt,
-    };
-    setEditingKredit(nextKredit);
+    });
   };
 
   const handleZinsChange = (zins: number) => {
     if (!editingKredit) return;
-    const netto = editingKredit.betrag || 0;
-    const laufzeit = editingKredit.laufzeitJahre || 5;
-    const rate = calculateMonthlyRate(netto, zins, laufzeit);
-    const gesamt = calculateTotalAmount(rate, laufzeit);
-    const nextKredit: Kredit = {
+    setEditingKredit({
       ...editingKredit,
       zins: zins,
-      rate_monat: rate,
-      gesamtbetrag: gesamt,
-    };
-    setEditingKredit(nextKredit);
+    });
   };
 
   const handleRateChange = (rate: number) => {
     if (!editingKredit) return;
-    const laufzeit = editingKredit.laufzeitJahre || 5;
-    const gesamt = calculateTotalAmount(rate, laufzeit);
-    const nextKredit: Kredit = {
+    setEditingKredit({
       ...editingKredit,
-      rate_monat: rate,
-      gesamtbetrag: gesamt,
-    };
-    setEditingKredit(nextKredit);
+      rate_monat: Math.max(0, rate),
+    });
   };
 
   const handleRestbetragChange = (val: number) => {
@@ -448,18 +423,17 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
     if (!editingKredit) return;
     setEditingKredit({
       ...editingKredit,
-      gesamtbetrag: gesamt,
+      gesamtbetrag: Math.max(0, gesamt),
     });
   };
 
   const handleStartDateChange = (month: number, year: number) => {
     if (!editingKredit) return;
-    const nextKredit: Kredit = {
+    setEditingKredit({
       ...editingKredit,
       startMonat: month,
       startJahr: year,
-    };
-    setEditingKredit(nextKredit);
+    });
   };
 
   const renderCreditCard = (k: Kredit) => {
@@ -467,7 +441,7 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
     const isBausparer = !!k.isBausparer;
     const isEndfaellig = k.tilgungsart === 'endfaellig';
     const totalCost = parseNum(k.gesamtbetrag);
-    const rest = parseNum(k.restbetrag);
+    const rest = calculateCurrentRestDebt(k);
     const paid = isBausparer ? rest : Math.max(0, totalCost - rest);
     const pctPaid = totalCost > 0 ? (paid / totalCost) * 100 : 0;
     const monthlyRate = parseNum(k.rate_monat || 0);
@@ -1227,14 +1201,14 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                       </div>
                     </div>
 
-                    {/* 8. Monatlicher Betrag (Abtrag) - Automatisch errechnet & editierbar */}
+                    {/* 8. Monatlicher Betrag (Abtrag) - Manuelles Inputfeld */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-xs font-bold text-[#1d4ed8] uppercase tracking-wider">
                           Monatliche Rate (Abtrag)
                         </label>
                         <span className="text-[10px] font-bold text-[#1d4ed8] bg-[#eff6ff] px-2 py-0.5 rounded-full border border-[#bfdbfe]">
-                          Automatisch errechnet · Editierbar
+                          Manuelle Eingabe
                         </span>
                       </div>
                       <div className="relative">
@@ -1251,14 +1225,14 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                       </div>
                     </div>
 
-                    {/* 9. Gesamtbetrag (inkl. Zinsen & Gebühren) */}
+                    {/* 9. Gesamtbetrag (inkl. Zinsen & Gebühren) - Manuelles Inputfeld */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-xs font-bold text-[#475569] uppercase tracking-wider">
                           Gesamtbetrag (inkl. Zinsen &amp; Gebühren)
                         </label>
                         <span className="text-[10px] font-bold text-[#475569] bg-[#f1f5f9] px-2 py-0.5 rounded-full border border-[#e2e8f0]">
-                          Automatisch berechnet
+                          Manuelle Eingabe
                         </span>
                       </div>
                       <div className="relative">
@@ -1278,27 +1252,15 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                       </p>
                     </div>
 
-                    {/* 10. Restschuld - Manuell eingebbar & optional automatisch berechenbar */}
+                    {/* 10. Restschuld - Manuell eingegeben & jeden Monat automatisch um die Rate verringert */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-xs font-bold text-[#991b1b] uppercase tracking-wider flex items-center gap-1.5">
-                          <span>Aktuelle Restschuld</span>
-                          <span className="text-[10px] font-bold text-[#991b1b] bg-[#fee2e2] px-2 py-0.5 rounded-full border border-[#fca5a5]">
-                            Manuell anpassbar
-                          </span>
+                          <span>Restschuld (Startwert)</span>
                         </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const autoRest = calculateCurrentRestDebt(editingKredit);
-                            setEditingKredit({ ...editingKredit, restbetrag: autoRest });
-                          }}
-                          className="text-[11px] font-bold text-[#1e3a8a] hover:underline flex items-center gap-1 cursor-pointer"
-                          title="Restschuld automatisch anhand von Startdatum & Rate berechnen"
-                        >
-                          <Sparkles className="w-3 h-3 text-[#2563eb]" />
-                          <span>Automatisch berechnen</span>
-                        </button>
+                        <span className="text-[10px] font-bold text-[#991b1b] bg-[#fee2e2] px-2 py-0.5 rounded-full border border-[#fca5a5]">
+                          Manuell · mtl. auto-abgezogen
+                        </span>
                       </div>
                       <div className="relative">
                         <FormattedAmountInput
@@ -1313,8 +1275,14 @@ export const KrediteTab: React.FC<KrediteTabProps> = ({
                         </span>
                       </div>
                       <p className="mt-1.5 text-[11px] text-[#64748b]">
-                        Gib hier die tatsächliche Restschuld deines aktuellen Kontoauszugs ein.
+                        Verringert sich jeden vergangenen Monat ab dem Startdatum ({curStartMonat < 10 ? '0' : ''}{curStartMonat}/{curStartJahr}) automatisch um die mtl. Rate ({fmt(curRate)}).
                       </p>
+                      {elapsedMonths > 0 && (
+                        <div className="mt-2 p-2 bg-[#fff7ed] border border-[#ffedd5] rounded-lg text-[11px] text-[#c2410c] flex items-center justify-between font-medium">
+                          <span>Aktuelle Restschuld heute ({elapsedMonths} {elapsedMonths === 1 ? 'Monat' : 'Monate'} vergangen):</span>
+                          <strong className="text-base font-bold text-[#9a3412] tabular-nums">{fmt(calculatedRestDebt)}</strong>
+                        </div>
+                      )}
                     </div>
 
                     {/* 12. Link */}

@@ -81,6 +81,8 @@ const COCKPIT_META: Record<CockpitKey, { title: string; subtitle: string; icon: 
   },
 };
 
+import { calculateCurrentRestDebt } from '../utils/creditCalculator';
+
 interface CockpitTabProps {
   categories: FixCategory[];
   incomeGroups: IncomeGroup[];
@@ -192,7 +194,7 @@ export const CockpitTab: React.FC<CockpitTabProps> = ({
   const activeKredite = kredite.filter((k) => k.active !== false);
   const activeDebtKredite = activeKredite.filter((k) => !k.isBausparer);
 
-  const totalRestDebt = activeDebtKredite.reduce((sum, k) => sum + parseNum(k.restbetrag), 0);
+  const totalRestDebt = activeDebtKredite.reduce((sum, k) => sum + calculateCurrentRestDebt(k), 0);
   const totalOriginalDebt = activeDebtKredite.reduce((sum, k) => sum + parseNum(k.gesamtbetrag), 0);
   const totalLoanMonthlyRate = activeKredite.reduce((sum, k) => sum + parseNum(k.rate_monat || 0), 0);
 
@@ -201,7 +203,7 @@ export const CockpitTab: React.FC<CockpitTabProps> = ({
     return cat === 'ratenkredit' || cat === 'konsum';
   });
   const ratenDebt = ratenKredite.filter((k) => !k.isBausparer);
-  const ratenRest = ratenDebt.reduce((s, k) => s + parseNum(k.restbetrag), 0);
+  const ratenRest = ratenDebt.reduce((s, k) => s + calculateCurrentRestDebt(k), 0);
   const ratenOriginal = ratenDebt.reduce((s, k) => s + parseNum(k.gesamtbetrag), 0);
   const ratenPaid = Math.max(0, ratenOriginal - ratenRest);
   const ratenPaidPct = ratenOriginal > 0 ? (ratenPaid / ratenOriginal) * 100 : 0;
@@ -209,7 +211,7 @@ export const CockpitTab: React.FC<CockpitTabProps> = ({
 
   const immoKredite = activeKredite.filter((k) => k.kategorie === 'immobilie');
   const immoDebt = immoKredite.filter((k) => !k.isBausparer);
-  const immoRest = immoDebt.reduce((s, k) => s + parseNum(k.restbetrag), 0);
+  const immoRest = immoDebt.reduce((s, k) => s + calculateCurrentRestDebt(k), 0);
   const immoOriginal = immoDebt.reduce((s, k) => s + parseNum(k.gesamtbetrag), 0);
   const immoPaid = Math.max(0, immoOriginal - immoRest);
   const immoPaidPct = immoOriginal > 0 ? (immoPaid / immoOriginal) * 100 : 0;
